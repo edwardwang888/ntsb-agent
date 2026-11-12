@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Data (downloaded and derived; reproducible from ingestion scripts)
+data/
+*.mdb
+*.zip
+*.db
+*.sqlite
+
+# Model/tool call logs
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
