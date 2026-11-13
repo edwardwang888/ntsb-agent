@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import re
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -85,7 +86,13 @@ def _get_mdb(raw_dir: Path, refresh: bool) -> Path:
     zip_path, mdb_path = raw_dir / "avall.zip", raw_dir / "avall.mdb"
     if refresh or not zip_path.exists():
         print(f"Downloading {AVALL_URL} ...", file=sys.stderr)
-        urllib.request.urlretrieve(AVALL_URL, zip_path)
+        # data.ntsb.gov sits behind Cloudflare, which returns 403 to urllib's
+        # default "Python-urllib/3.x" User-Agent. Send a generic one instead.
+        req = urllib.request.Request(AVALL_URL, headers={"User-Agent": "ntsb-agent/0.1"})
+        tmp = zip_path.with_suffix(".zip.part")
+        with urllib.request.urlopen(req, timeout=300) as resp, open(tmp, "wb") as f:
+            shutil.copyfileobj(resp, f)
+        tmp.replace(zip_path)  # only a complete download becomes avall.zip
     if refresh or not mdb_path.exists():
         with zipfile.ZipFile(zip_path) as z:
             z.extract("avall.mdb", raw_dir)
