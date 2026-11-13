@@ -16,7 +16,7 @@ from pathlib import Path
 
 from .calllog import log, new_run_id
 from .db import execute_sql
-from .llm import call_model
+from .llm import ModelGateway
 
 PROMPTS = Path(__file__).parent / "prompts"
 
@@ -60,13 +60,13 @@ def _prompts() -> tuple[str, str]:
     return write_sql, answer
 
 
-def ask(question: str) -> Answer:
+def ask(question: str, llm: ModelGateway) -> Answer:
     run_id = new_run_id()
     log("question", run_id, question=question)
     write_sql_system, answer_system = _prompts()
 
     # Step 1: model writes SQL (or says the question isn't answerable from data).
-    plan = json.loads(call_model(
+    plan = json.loads(llm.call(
         run_id=run_id, step="write_sql",
         system=write_sql_system, user=question, output_schema=SQL_PLAN_SCHEMA,
     ))
@@ -86,7 +86,7 @@ def ask(question: str) -> Answer:
            if result is not None else
            "<query_results>No query was run: the question was judged not answerable from the database.</query_results>")
     )
-    text = call_model(run_id=run_id, step="answer", system=answer_system, user=answer_input)
+    text = llm.call(run_id=run_id, step="answer", system=answer_system, user=answer_input)
 
     out = Answer(run_id, question, plan["answerable"], plan["sql"], plan["notes"], result, text)
     log("answer", run_id, answer=text)
@@ -96,7 +96,8 @@ def ask(question: str) -> Answer:
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("question")
-    a = ask(p.parse_args().question)
+    llm = ModelGateway()  # the one place the model dependency is built
+    a = ask(p.parse_args().question, llm)
     print(a.text)
     print("\n---")
     print(f"run_id: {a.run_id}")

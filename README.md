@@ -22,6 +22,6 @@ Every model call and SQL execution is logged to `logs/YYYY-MM-DD.jsonl`, grouped
 | `ntsb_agent/ingest.py` | `fetch_ntsb_tables()`: the only code that knows the data source (swap point for the 2027 NTSB API) |
 | `ntsb_agent/load.py` | Builds SQLite from the fetched tables |
 | `ntsb_agent/db.py` | `execute_sql()`: read-only, time/row/size-bounded query execution |
-| `ntsb_agent/llm.py` | `call_model()`: single choke point for Claude API calls + logging |
+| `ntsb_agent/llm.py` | `ModelGateway`: single choke point for Claude API calls + logging, created once at the entry point and passed in |
 | `ntsb_agent/qa.py` | The pipeline: question → SQL → rows → answer |
 | `ntsb_agent/prompts/` | System prompts and the hand-written schema description |
