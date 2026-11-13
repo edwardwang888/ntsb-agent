@@ -53,3 +53,9 @@ Template:
 - **Alternatives considered:** Plain `messages.create` and treat refusals as errors.
 - **Why:** Accident narratives can describe injuries and deaths in detail; a refusal would otherwise end the question. The fallback is visible in the logged response (`fallback` blocks / `usage.iterations`).
 - **Revisit when:** If refusals never occur in eval runs, drop the beta to simplify. `stop_reason == "refusal"` still raises.
+
+## 2026-11-13 — API key read from `NTSB_ANTHROPIC_API_KEY` first
+- **Decision:** `llm._get_client()` passes `NTSB_ANTHROPIC_API_KEY` to the SDK if set; otherwise the SDK's default `ANTHROPIC_API_KEY` lookup applies.
+- **Alternatives considered:** Keep only `ANTHROPIC_API_KEY`; store the key as a network secret on `api.anthropic.com`.
+- **Why:** The cloud environment defines `ANTHROPIC_API_KEY`, but it never reaches the session shell (likely reserved because Claude Code uses that name for its own connection), and `api.anthropic.com` can't hold a network secret. A project-prefixed name avoids the collision; the fallback keeps `.env`-based local runs unchanged.
+- **Revisit when:** The platform passes `ANTHROPIC_API_KEY` through, or Phase 4 moves secrets into a dedicated secrets manager.

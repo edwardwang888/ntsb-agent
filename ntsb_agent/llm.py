@@ -5,6 +5,7 @@ retries, token budgets, governance checks) is applied in exactly one place.
 """
 from __future__ import annotations
 
+import os
 import time
 
 import anthropic
@@ -20,7 +21,13 @@ def _get_client() -> anthropic.Anthropic:
     if _client is None:
         # Default SDK retries (2) stay on in Phase 1. In Phase 3 we set
         # max_retries=0 and own the retry policy so every attempt is logged.
-        _client = anthropic.Anthropic()
+        # The cloud environment withholds ANTHROPIC_API_KEY from the shell
+        # (reserved for the platform's own connection), so the key is stored as
+        # NTSB_ANTHROPIC_API_KEY there. None falls back to ANTHROPIC_API_KEY
+        # (from .env or the shell) for local runs.
+        _client = anthropic.Anthropic(
+            api_key=os.environ.get("NTSB_ANTHROPIC_API_KEY") or None
+        )
     return _client
 
 

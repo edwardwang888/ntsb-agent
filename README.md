@@ -6,7 +6,7 @@ Answers questions about aviation accidents from NTSB data. Learning project; see
 ```bash
 apt-get install mdbtools        # or: brew install mdbtools
 pip install -r requirements.txt
-cp .env.example .env            # add ANTHROPIC_API_KEY
+cp .env.example .env            # add ANTHROPIC_API_KEY (cloud env: NTSB_ANTHROPIC_API_KEY)
 python -m ntsb_agent.load       # downloads avall.zip (~100 MB), builds data/ntsb.db
 ```
 
