@@ -1,0 +1,13 @@
+# Dependabot: GitHub opens PRs for dependency updates. It runs on GitHub's side
+# against the default branch; there is no workflow to run in CI.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"            # requirements.txt
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "github-actions"
+    directory: "/"            # .github/workflows, once we add CI
+    schedule:
+      interval: "weekly"
