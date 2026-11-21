@@ -65,3 +65,9 @@ Template:
 - **Alternatives considered:** (a) Keep the function with a lazily created `global _client`. (b) Same, but `@functools.cache` on `_get_client()` instead of `global`. (c) A class plus a module-level `default_gateway`.
 - **Why:** (a)–(c) all keep the dependency on the model hidden module state; (b) and (c) only rename the global. Passing the gateway in (dependency injection) makes the dependency visible in `ask()`'s signature, lets tests and evals pass a fake or replaying client instead of monkeypatching, and gives Phase 3 per-run state (retry policy, token budget) and Phase 4 governance checks an obvious home. Cost: one extra parameter at each call site.
 - **Revisit when:** Phase 3 adds retries/budgets (put them on the instance, not module globals). If several gateways with different configs coexist, consider a small config dataclass passed to `__init__`.
+
+## 2026-11-16 — Secret scanning with gitleaks in CI
+- **Decision:** A GitHub Actions workflow (`.github/workflows/secret-scan.yml`) runs `gitleaks/gitleaks-action` on every push and pull request, scanning each commit in the range rather than only the final tree.
+- **Alternatives considered:** A local pre-commit hook (catches a secret before it ever leaves the machine, but needs the `pre-commit` tool installed on every clone and can be skipped with `--no-verify`); TruffleHog (verifies live keys against provider APIs, heavier and noisier for a small repo); relying on GitHub's built-in push protection alone (only covers partner-registered token formats).
+- **Why:** CI can't be skipped and needs nothing installed locally. Scanning per commit matters because a key added and then deleted is still in history. No new Python dependency.
+- **Revisit when:** A secret slips through (add a pre-commit hook for earlier blocking), we get false positives (add a `.gitleaks.toml` allowlist), or the repo moves under a GitHub organization (the action then needs a free `GITLEAKS_LICENSE` key).
